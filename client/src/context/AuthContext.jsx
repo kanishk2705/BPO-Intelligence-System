@@ -30,7 +30,15 @@ export const AuthProvider = ({ children }) => {
                     if (data) setRole(data.role);
                 }
             } catch (err) {
-                console.error("Auth Error:", err.message || err);
+                console.error("Auth Error (Auto-Clearing Cache):", err.message || err);
+
+                // --- THE FIX: Purge the bad cache immediately on startup ---
+                setUser(null);
+                setRole(null);
+                localStorage.clear();
+                sessionStorage.clear();
+                supabase.auth.signOut().catch(e => console.log("Ignored background signout error", e));
+
             } finally {
                 if (mounted) setLoading(false);
             }
@@ -71,6 +79,7 @@ export const AuthProvider = ({ children }) => {
         // 3. Force instant redirect
         window.location.href = '/login';
     };
+
     return (
         <AuthContext.Provider value={{ user, role, loading, logout }}>
             {loading ? (
