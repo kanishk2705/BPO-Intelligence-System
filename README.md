@@ -107,5 +107,3 @@ npm run dev
 * **Frontend Application:** Hosted on Vercel
 * **Backend API:** Hosted on Render Web Services
 * **Database:** Hosted on Supabase Cloud
-
-*(Note: When running the deployed frontend, ensure it is configured to fetch from the live Render API URL rather than `localhost:5000`)*.
