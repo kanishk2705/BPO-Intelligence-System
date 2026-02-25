@@ -26,7 +26,7 @@ export default function AgentLayout() {
             {/* ---------------- AGENT SIDEBAR ---------------- */}
             <div className="w-64 bg-slate-900 text-slate-300 flex flex-col">
                 <div className="h-16 flex items-center px-6 border-b border-slate-800">
-                    <h1 className="text-xl font-bold text-white">BPO Portal</h1>
+                    <img src="/logo.jpg" alt="Logo" className="h-16 w-auto mr-2" />
                     <span className="ml-2 text-xs font-semibold px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded-full">AGENT</span>
                 </div>
 
@@ -40,8 +40,8 @@ export default function AgentLayout() {
                                 key={item.name}
                                 to={item.href}
                                 className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${isActive
-                                        ? 'bg-blue-600 text-white'
-                                        : 'hover:bg-slate-800 hover:text-white'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'hover:bg-slate-800 hover:text-white'
                                     }`}
                             >
                                 <Icon className={`mr-3 h-5 w-5 ${isActive ? 'text-blue-200' : 'text-slate-400'}`} />

@@ -26,7 +26,8 @@ export default function AdminLayout() {
             <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
                 {/* Logo Area */}
                 <div className="h-16 flex items-center px-6 border-b border-gray-200">
-                    <h1 className="text-xl font-bold text-blue-600">BPO Portal</h1>
+                    <img src="/logo.jpg" alt="Logo" className="h-16 w-auto mr-2" />
+
                     <span className="ml-2 text-xs font-semibold px-2 py-1 bg-blue-100 text-blue-800 rounded-full">ADMIN</span>
                 </div>
 
@@ -41,8 +42,8 @@ export default function AdminLayout() {
                                 key={item.name}
                                 to={item.href}
                                 className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${isActive
-                                        ? 'bg-blue-50 text-blue-700'
-                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                    ? 'bg-blue-50 text-blue-700'
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                     }`}
                             >
                                 <Icon className={`mr-3 h-5 w-5 ${isActive ? 'text-blue-700' : 'text-gray-400'}`} />

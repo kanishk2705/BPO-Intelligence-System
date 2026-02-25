@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // ADDED Link HERE
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -13,7 +13,6 @@ export default function Login() {
         e.preventDefault();
         setIsLoading(true);
 
-        // 1. Authenticate with Supabase
         const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
             email,
             password,
@@ -25,7 +24,6 @@ export default function Login() {
             return;
         }
 
-        // 2. Fetch the user's role to determine where to redirect them
         const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('role')
@@ -38,7 +36,6 @@ export default function Login() {
             return;
         }
 
-        // 3. Redirect based on role
         toast.success('Login Successful!');
         const userRole = profileData.role;
 
@@ -55,7 +52,11 @@ export default function Login() {
 
             <div className="w-full max-w-md p-8 bg-white rounded-xl shadow-lg border border-gray-100">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">BPO Portal</h1>
+                    {/* --- LOGO ADDED HERE --- */}
+                    <div className="flex justify-center mb-4">
+                        <img src="/logo.jpg" alt="BPO Portal Logo" className="h-16 w-auto object-contain" />
+                    </div>
+                    {/* <h1 className="text-3xl font-bold text-gray-900">BPO Portal</h1> */}
                     <p className="text-gray-500 mt-2">Sign in to your account</p>
                 </div>
 
@@ -75,7 +76,6 @@ export default function Login() {
                     <div>
                         <div className="flex justify-between items-center">
                             <label className="block text-sm font-medium text-gray-700">Password</label>
-                            {/* --- NEW FORGOT PASSWORD LINK --- */}
                             <Link to="/forgot-password" className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors">
                                 Forgot password?
                             </Link>

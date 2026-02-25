@@ -23,7 +23,7 @@ export default function LeadLayout() {
             {/* ---------------- LEAD SIDEBAR ---------------- */}
             <div className="w-64 bg-white border-r border-indigo-100 flex flex-col shadow-sm z-10">
                 <div className="h-16 flex items-center px-6 border-b border-indigo-50">
-                    <h1 className="text-xl font-bold text-indigo-900">BPO Portal</h1>
+                    <img src="/logo.jpg" alt="Logo" className="h-16 w-auto mr-2" />
                     <span className="ml-2 text-xs font-semibold px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full">LEAD</span>
                 </div>
 
@@ -37,8 +37,8 @@ export default function LeadLayout() {
                                 key={item.name}
                                 to={item.href}
                                 className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${isActive
-                                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-                                        : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-900'
+                                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                                    : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-900'
                                     }`}
                             >
                                 <Icon className={`mr-3 h-5 w-5 ${isActive ? 'text-indigo-200' : 'text-slate-400'}`} />
