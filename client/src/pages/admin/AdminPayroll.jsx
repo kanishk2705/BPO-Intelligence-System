@@ -24,7 +24,7 @@ export default function AdminPayroll() {
             // The backend expects a full date string like '2026-02-01'
             const formattedDate = `${selectedMonth}-01`;
 
-            const response = await fetch(`http://localhost:5000/api/payroll?month_year=${formattedDate}`, {
+            const response = await fetch(`https://bpo-backend-vemc.onrender.com/api/payroll?month_year=${formattedDate}`, {
                 headers: { 'Authorization': `Bearer ${session.access_token}` }
             });
 
@@ -47,7 +47,7 @@ export default function AdminPayroll() {
 
             const formattedDate = `${selectedMonth}-01`;
 
-            const response = await fetch('http://localhost:5000/api/payroll/generate', {
+            const response = await fetch('https://bpo-backend-vemc.onrender.com/api/payroll/generate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

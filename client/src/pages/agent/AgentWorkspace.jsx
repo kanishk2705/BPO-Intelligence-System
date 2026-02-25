@@ -31,7 +31,7 @@ export default function AgentWorkspace() {
             };
 
             // 4. Send it to our Node.js API
-            const response = await fetch('http://localhost:5000/api/tickets', {
+            const response = await fetch('https://bpo-backend-vemc.onrender.com/api/tickets', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

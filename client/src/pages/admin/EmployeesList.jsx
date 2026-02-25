@@ -44,7 +44,7 @@ export default function AdminEmployees() {
         try {
             const { data: { session } } = await supabase.auth.getSession();
 
-            const response = await fetch('http://localhost:5000/api/users', {
+            const response = await fetch('https://bpo-backend-vemc.onrender.com/api/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

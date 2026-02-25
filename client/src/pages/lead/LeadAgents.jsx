@@ -54,7 +54,7 @@ export default function LeadAgents() {
             if (!session) throw new Error("Authentication error. Please log in again.");
 
             // 2. Send the exact payload our new Express route expects
-            const response = await fetch('http://localhost:5000/api/shifts', {
+            const response = await fetch('https://bpo-backend-vemc.onrender.com/api/shifts', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

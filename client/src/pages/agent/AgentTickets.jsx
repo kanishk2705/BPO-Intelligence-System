@@ -22,7 +22,7 @@ export default function AgentTickets() {
             if (sessionError) throw sessionError;
             if (!session) return;
 
-            const response = await fetch(`http://localhost:5000/api/tickets?agent_id=${session.user.id}`, {
+            const response = await fetch(`https://bpo-backend-vemc.onrender.com/api/tickets?agent_id=${session.user.id}`, {
                 headers: { 'Authorization': `Bearer ${session.access_token}` }
             });
 
@@ -121,9 +121,9 @@ export default function AgentTickets() {
                                     <td className="px-6 py-4">{extractCategory(tkt.issue_description)}</td>
                                     <td className="px-6 py-4">
                                         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${tkt.status === 'resolved' ? 'bg-emerald-100 text-emerald-700' :
-                                                tkt.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                                                    tkt.status === 'open' ? 'bg-amber-100 text-amber-700' :
-                                                        'bg-red-100 text-red-700'
+                                            tkt.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                                                tkt.status === 'open' ? 'bg-amber-100 text-amber-700' :
+                                                    'bg-red-100 text-red-700'
                                             }`}>
                                             {tkt.status.replace('_', ' ')}
                                         </span>
@@ -172,9 +172,9 @@ export default function AgentTickets() {
                                 <div className="text-right">
                                     <p className="text-sm font-semibold text-slate-500 mb-1">Status</p>
                                     <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${selectedTicket.status === 'resolved' ? 'bg-emerald-100 text-emerald-700' :
-                                            selectedTicket.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                                                selectedTicket.status === 'open' ? 'bg-amber-100 text-amber-700' :
-                                                    'bg-red-100 text-red-700'
+                                        selectedTicket.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                                            selectedTicket.status === 'open' ? 'bg-amber-100 text-amber-700' :
+                                                'bg-red-100 text-red-700'
                                         }`}>
                                         {selectedTicket.status.replace('_', ' ')}
                                     </span>

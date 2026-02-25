@@ -19,7 +19,7 @@ export default function AgentSchedule() {
             if (!session) return;
 
             // 2. Fetch only THIS agent's shifts from the backend
-            const response = await fetch(`http://localhost:5000/api/shifts?user_id=${session.user.id}`, {
+            const response = await fetch(`https://bpo-backend-vemc.onrender.com/api/shifts?user_id=${session.user.id}`, {
                 headers: {
                     'Authorization': `Bearer ${session.access_token}`
                 }

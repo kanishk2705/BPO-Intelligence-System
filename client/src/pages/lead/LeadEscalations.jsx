@@ -19,7 +19,7 @@ export default function LeadEscalations() {
             if (!session) return;
 
             // Fetch ONLY tickets where status is 'escalated'
-            const response = await fetch('http://localhost:5000/api/tickets?status=escalated', {
+            const response = await fetch('https://bpo-backend-vemc.onrender.com/api/tickets?status=escalated', {
                 headers: {
                     'Authorization': `Bearer ${session.access_token}`
                 }
@@ -43,7 +43,7 @@ export default function LeadEscalations() {
             const { data: { session } } = await supabase.auth.getSession();
 
             // Send a PUT request to update the status to 'resolved'
-            const response = await fetch(`http://localhost:5000/api/tickets/${id}`, {
+            const response = await fetch(`https://bpo-backend-vemc.onrender.com/api/tickets/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
