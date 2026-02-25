@@ -23,7 +23,7 @@ export default function LeadLayout() {
             {/* ---------------- LEAD SIDEBAR ---------------- */}
             <div className="w-64 bg-white border-r border-indigo-100 flex flex-col shadow-sm z-10">
                 <div className="h-16 flex items-center px-6 border-b border-indigo-50">
-                    <img src="/logo.jpg" alt="Logo" className="h-16 w-auto mr-2" />
+                    <img src="/logo.jpg" alt="Logo" className="h-8 w-auto mr-2" />
                     <span className="ml-2 text-xs font-semibold px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full">LEAD</span>
                 </div>
 

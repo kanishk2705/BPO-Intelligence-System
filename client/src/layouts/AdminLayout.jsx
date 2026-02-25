@@ -26,7 +26,7 @@ export default function AdminLayout() {
             <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
                 {/* Logo Area */}
                 <div className="h-16 flex items-center px-6 border-b border-gray-200">
-                    <img src="/logo.jpg" alt="Logo" className="h-16 w-auto mr-2" />
+                    <img src="/logo.jpg" alt="Logo" className="h-8 w-auto mr-2" />
 
                     <span className="ml-2 text-xs font-semibold px-2 py-1 bg-blue-100 text-blue-800 rounded-full">ADMIN</span>
                 </div>
