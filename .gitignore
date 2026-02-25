@@ -1,0 +1,32 @@
+# Node modules
+node_modules/
+dist/
+build/
+.pnp/
+.pnp.js
+
+# Python
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Env Variables
+.env
+.env.local
+.env.*
+
+# System
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+logs/
+*.log
+
+# Supabase
+supabase/tmp/
