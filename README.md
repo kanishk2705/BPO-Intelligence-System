@@ -1,8 +1,3 @@
-Here is the complete, professional `README.md` file in Markdown format. It includes your academic context, the exact 5-person team breakdown, the full feature list, your tech stack, and the Render/Vercel deployment architecture we just discussed.
-
-You can copy everything inside the block below and paste it directly into your `README.md` file.
-
-```markdown
 # 🏢 BPO Management System (BPO Portal)
 
 An enterprise-grade, full-stack web application designed to streamline Business Process Outsourcing (BPO) floor operations. This system handles the complete lifecycle of customer support ticketing, employee shift scheduling, and automated payroll generation.
@@ -48,10 +43,10 @@ This project was built using an Agile methodology, with distinct domain ownershi
 | Team Member | System Role | Primary Responsibilities |
 | :--- | :--- | :--- |
 | **Kanishk** | Database Architect & Security Lead | Designed the PostgreSQL schema (`profiles`, `tickets`, `shifts`, `payroll`). Implemented all Row Level Security (RLS) policies to protect data layers. |
-| **[Teammate 2 Name]** | Frontend Engineer (Agent UI) | Built the Agent workspace, ticketing history, and dynamic shift calendar components. Focused on state management and UI/UX. |
-| **[Teammate 3 Name]** | Frontend Engineer (Management UI) | Developed the Lead Escalation inbox, Team Overview analytics dashboard, and the Admin Employee directory. Implemented client-side search/filter logic. |
-| **[Teammate 4 Name]** | Backend API Developer (Core) | Engineered the Express.js REST APIs for ticket creation, category extraction, and the shift scheduling endpoints. |
-| **[Teammate 5 Name]** | Backend API Developer (Finance) | Architected the automated Payroll calculation algorithm and the secure `God-Mode` user creation API using Supabase Service Keys. |
+| **Gopi** | Frontend Engineer (Agent UI) | Built the Agent workspace, ticketing history, and dynamic shift calendar components. Focused on state management and UI/UX. |
+| **Meena** | Frontend Engineer (Management UI) | Developed the Lead Escalation inbox, Team Overview analytics dashboard, and the Admin Employee directory. Implemented client-side search/filter logic. |
+| **Petchiammal** | Backend API Developer (Core) | Engineered the Express.js REST APIs for ticket creation, category extraction, and the shift scheduling endpoints. |
+| **Zainab Nadhira** | Backend API Developer (Finance) | Architected the automated Payroll calculation algorithm and the secure `God-Mode` user creation API using Supabase Service Keys. |
 
 ---
 
@@ -114,7 +109,3 @@ npm run dev
 * **Database:** Hosted on Supabase Cloud
 
 *(Note: When running the deployed frontend, ensure it is configured to fetch from the live Render API URL rather than `localhost:5000`)*.
-
-```
-
-```
