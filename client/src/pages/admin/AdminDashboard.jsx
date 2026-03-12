@@ -75,7 +75,7 @@ export default function AdminDashboard() {
             ) : (
                 <>
                     {/* Executive Metrics Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
 
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
                             <div className="h-12 w-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">

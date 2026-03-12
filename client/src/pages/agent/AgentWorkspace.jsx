@@ -67,7 +67,8 @@ export default function AgentWorkspace() {
     return (
         <div className="max-w-6xl mx-auto space-y-6">
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* FIX 1: Changed md:grid-cols-3 to lg:grid-cols-3 to match the child columns */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
 
                 {/* --- LEFT COLUMN: Call Entry Form --- */}
                 <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -80,7 +81,9 @@ export default function AgentWorkspace() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                        <div className="grid grid-cols-2 gap-5">
+
+                        {/* FIX 2: Changed grid-cols-2 to grid-cols-1 sm:grid-cols-2 */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Customer Name</label>
                                 <input type="text" required className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
@@ -93,7 +96,8 @@ export default function AgentWorkspace() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-5">
+                        {/* FIX 3: Changed grid-cols-2 to grid-cols-1 sm:grid-cols-2 */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Issue Category</label>
                                 <select className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
@@ -131,7 +135,7 @@ export default function AgentWorkspace() {
                     </form>
                 </div>
 
-                {/* --- RIGHT COLUMN: Agent Stats (Still Mock Data for now) --- */}
+                {/* --- RIGHT COLUMN: Agent Stats --- */}
                 <div className="space-y-6">
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                         <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Current Shift Stats</h3>
