@@ -15,7 +15,7 @@ const authMiddleware = async (req, res, next) => {
         const { data: { user }, error } = await supabase.auth.getUser(token);
 
         if (error || !user) {
-            return res.status(401).json({ error: 'Invalid Token' });
+            return res.status(401).json({ error: 'Invalid Token', details: error?.message || 'User not found' });
         }
 
         // 3. Get the user's role from the 'profiles' table
@@ -28,9 +28,9 @@ const authMiddleware = async (req, res, next) => {
 
         // 4. Attach user info to the request object so the next function can use it
         req.user = user;
-        req.profile = profile;
+        req.profile = profile || { role: 'unknown' };
 
-        console.log(`👤 User Verified: ${profile?.email} (${profile?.role})`);
+        console.log(`👤 User Verified: ${req.profile?.email || user.email} (${req.profile?.role})`);
 
         next(); // Pass control to the next function (The Controller)
 

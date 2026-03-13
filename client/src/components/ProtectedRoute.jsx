@@ -25,7 +25,7 @@ export default function ProtectedRoute({ allowedRoles }) {
         if (role === 'admin') return <Navigate to="/admin" replace />;
         if (role === 'lead') return <Navigate to="/lead" replace />;
         if (role === 'agent') return <Navigate to="/agent" replace />;
-        return <Navigate to="/login" replace />; // Safe fallback
+        return <Navigate to="/login" replace />; // Safe fallback if completely unknown
     }
 
     return <Outlet />;

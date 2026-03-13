@@ -80,9 +80,11 @@ export default function LeadAgents() {
 
         } catch (error) {
             console.error('Shift Assignment Error:', error);
-            toast.error(error.message);
+            toast.error(error.message || 'An unexpected error occurred assigning shift');
         } finally {
             setIsSubmitting(false);
+            // Optional: You could fetch the roster again here if you want to verify state instantly
+            // fetchAgents();
         }
     };
 

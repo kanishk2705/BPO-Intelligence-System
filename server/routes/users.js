@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { createClient } = require('@supabase/supabase-js');
+const authMiddleware = require('../middleware/authMiddleware');
+const authorizeRoles = require('../middleware/roleMiddleware');
 
 // 1. Create a "God-Mode" Admin Client using the Service Key
 const supabaseAdmin = createClient(
@@ -15,24 +17,9 @@ const getSupabaseUserClient = (req) => {
     });
 };
 
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, authorizeRoles('admin'), async (req, res) => {
     try {
         const { email, password, full_name, role, hourly_rate } = req.body;
-
-        // Verify the person requesting this is actually an Admin
-        const supabaseUser = getSupabaseUserClient(req);
-        const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
-        if (authError || !user) return res.status(401).json({ error: 'Unauthorized' });
-
-        const { data: adminProfile } = await supabaseUser
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-
-        if (adminProfile?.role !== 'admin') {
-            return res.status(403).json({ error: 'Only Admins can create new users.' });
-        }
 
         // --- THE ACTUAL CREATION PROCESS ---
 

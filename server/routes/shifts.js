@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { createClient } = require('@supabase/supabase-js');
+const authMiddleware = require('../middleware/authMiddleware');
+const authorizeRoles = require('../middleware/roleMiddleware');
 
 // --- HELPER: Create a User-Scoped Supabase Client ---
 // This ensures your database RLS policies are strictly followed
@@ -18,7 +20,7 @@ const getSupabaseUserClient = (req) => {
 // ==========================================
 // 1. ASSIGN A SHIFT (Lead Action)
 // ==========================================
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, authorizeRoles('lead', 'admin'), async (req, res) => {
     try {
         const supabase = getSupabaseUserClient(req);
         const { user_id, date, shift_string } = req.body;
@@ -69,8 +71,14 @@ router.post('/', async (req, res) => {
             }, { onConflict: 'user_id, shift_date' }) // Prevents duplicate shifts per day
             .select();
 
-        if (error) throw error;
-        res.status(201).json(data[0]);
+        if (error) {
+            // RLS blocks or database issues will throw an error
+            throw error;
+        }
+
+        // Supabase returns an empty array if RLS strictly prevents the select() but upsert succeeded,
+        // so we safely fall back to success: true to avoid throwing a 500 null pointer exception
+        res.status(201).json(data && data.length > 0 ? data[0] : { success: true, message: "Shift updated but returning data was blocked by RLS" });
 
     } catch (error) {
         console.error('❌ Assign Shift Error:', error);
@@ -81,7 +89,7 @@ router.post('/', async (req, res) => {
 // ==========================================
 // 2. FETCH SHIFTS (Agent viewing Schedule)
 // ==========================================
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
     try {
         const supabase = getSupabaseUserClient(req);
         const { user_id } = req.query;

@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { createClient } = require('@supabase/supabase-js');
+const authMiddleware = require('../middleware/authMiddleware');
+const authorizeRoles = require('../middleware/roleMiddleware');
 
 // --- HELPER: Create a User-Scoped Supabase Client ---
 const getSupabaseUserClient = (req) => {
@@ -17,24 +19,10 @@ const getSupabaseUserClient = (req) => {
 // ==========================================
 // 1. GENERATE PAYROLL (Admin Action)
 // ==========================================
-router.post('/generate', async (req, res) => {
+router.post('/generate', authMiddleware, authorizeRoles('admin'), async (req, res) => {
     try {
         const supabase = getSupabaseUserClient(req);
         const { month_year } = req.body; // Expected format: 'YYYY-MM-01'
-
-        // 1. Verify the user running this is an Admin
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return res.status(401).json({ error: 'Unauthorized' });
-
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-
-        if (profile?.role !== 'admin') {
-            return res.status(403).json({ error: 'Only Admins can run payroll.' });
-        }
 
         // 2. Fetch all agents and their hourly rates
         const { data: agents, error: agentsError } = await supabase
@@ -106,7 +94,7 @@ router.post('/generate', async (req, res) => {
 // ==========================================
 // 2. FETCH PAYROLL RECORDS (Admin & Agent View)
 // ==========================================
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
     try {
         const supabase = getSupabaseUserClient(req);
         const { month_year, user_id } = req.query;

@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { createClient } = require('@supabase/supabase-js');
+const authMiddleware = require('../middleware/authMiddleware');
+const authorizeRoles = require('../middleware/roleMiddleware');
 
 // --- HELPER: Create a User-Scoped Supabase Client ---
 // This takes the token from the React frontend and passes it to Supabase.
@@ -19,7 +21,7 @@ const getSupabaseUserClient = (req) => {
 // ==========================================
 // 1. CREATE A NEW TICKET (Agent Workspace)
 // ==========================================
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, authorizeRoles('agent'), async (req, res) => {
     try {
         const supabase = getSupabaseUserClient(req);
 
@@ -52,7 +54,7 @@ router.post('/', async (req, res) => {
 // ==========================================
 // 2. FETCH TICKETS (Agent History & Lead Escalations)
 // ==========================================
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
     try {
         const supabase = getSupabaseUserClient(req);
 
@@ -92,7 +94,7 @@ router.get('/', async (req, res) => {
 // ==========================================
 // 3. UPDATE A TICKET (Lead Resolving Escalations)
 // ==========================================
-router.put('/:id', async (req, res) => {
+router.put('/:id', authMiddleware, authorizeRoles('lead', 'admin'), async (req, res) => {
     try {
         const supabase = getSupabaseUserClient(req);
         const { id } = req.params;

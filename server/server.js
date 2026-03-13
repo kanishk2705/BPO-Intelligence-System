@@ -34,20 +34,16 @@ app.get('/', (req, res) => {
 });
 
 // ----------------------------------
-// API Routes (We will add these later)
+// API Routes
 // ----------------------------------
-// app.use('/api/auth', require('./routes/authRoutes'));
-// app.use('/api/tickets', require('./routes/ticketRoutes'));
-app.use('/api/tickets', ticketsRoute);
-app.use('/api/shifts', shiftsRoute);
-app.use('/api/users', usersRoute);
-// Mount the Auth Routes
+// Apply routes securely
 app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
-app.use('/api/tickets', ticketRoutes);
-app.use('/api/shifts', shiftRoutes);
-app.use('/api/payroll', payrollRoutes);
+app.use('/api/tickets', ticketsRoute);
+app.use('/api/shifts', shiftsRoute);
 app.use('/api/payroll', payrollRoute);
+app.use('/api/users', usersRoute);
+
 // Start the Server
 app.listen(PORT, () => {
     console.log(`\n🚀 SERVER RUNNING ON: http://localhost:${PORT}`);
