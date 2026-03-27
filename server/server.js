@@ -14,11 +14,24 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware (Security & Parsing)
+const allowedOrigins = [
+    'http://localhost:5173',             // For your local testing
+    'https://bpo-portal.vercel.app'      // For your live Vercel app
+];
+
 app.use(cors({
-    // TODO: Replace with your actual deployed Vercel frontend URL before production
-    origin: ['http://localhost:5173', 'https://bpo-portal.vercel.app/login'], 
-    credentials: true,
-})); 
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) === -1) {
+            var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    credentials: true // Crucial if you are passing authorization headers/tokens
+}));
 
 // Parse JSON bodies with a strict size limit to prevent payload bloat
 app.use(express.json({ limit: '10mb' })); 
