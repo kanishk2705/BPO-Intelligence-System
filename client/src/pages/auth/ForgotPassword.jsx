@@ -1,3 +1,4 @@
+// client/src/pages/auth/ForgotPassword.jsx
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
@@ -14,9 +15,11 @@ export default function ForgotPassword() {
         setIsSubmitting(true);
 
         try {
-            // Tell Supabase to send a password reset email
+            // BUG FIX: Make the redirect URL dynamic for production (Vercel/Render)
+            const resetUrl = `${window.location.origin}/login`;
+
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: 'http://localhost:5173/login', // Where they go after clicking the email link
+                redirectTo: resetUrl, 
             });
 
             if (error) throw error;

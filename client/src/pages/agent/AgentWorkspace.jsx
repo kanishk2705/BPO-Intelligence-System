@@ -1,7 +1,8 @@
+// client/src/pages/agent/AgentWorkspace.jsx
 import { useState } from 'react';
 import { PhoneCall, Save, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { supabase } from '../../supabaseClient'; // 1. Import Supabase for the token
+import { supabase } from '../../supabaseClient'; 
 
 export default function AgentWorkspace() {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -9,7 +10,7 @@ export default function AgentWorkspace() {
         customerName: '',
         phoneNumber: '',
         category: 'General Inquiry',
-        status: 'resolved', // Matches your SQL ENUM
+        status: 'resolved', 
         notes: ''
     });
 
@@ -18,19 +19,15 @@ export default function AgentWorkspace() {
         setIsSubmitting(true);
 
         try {
-            // 2. Get the Agent's secure token
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("Authentication error. Please log in again.");
 
-            // 3. Format the data to perfectly match your PostgreSQL schema
             const formattedPayload = {
                 client_name: callData.customerName,
                 status: callData.status,
-                // We combine the extra UI fields into your single text column
                 issue_description: `[Phone: ${callData.phoneNumber}] | [Category: ${callData.category}]\nNotes: ${callData.notes}`
             };
 
-            // 4. Send it to our Node.js API
             const response = await fetch('https://bpo-backend-vemc.onrender.com/api/tickets', {
                 method: 'POST',
                 headers: {
@@ -67,7 +64,6 @@ export default function AgentWorkspace() {
     return (
         <div className="max-w-6xl mx-auto space-y-6">
 
-            {/* FIX 1: Changed md:grid-cols-3 to lg:grid-cols-3 to match the child columns */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
 
                 {/* --- LEFT COLUMN: Call Entry Form --- */}
@@ -82,7 +78,6 @@ export default function AgentWorkspace() {
 
                     <form onSubmit={handleSubmit} className="p-6 space-y-5">
 
-                        {/* FIX 2: Changed grid-cols-2 to grid-cols-1 sm:grid-cols-2 */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Customer Name</label>
@@ -96,7 +91,6 @@ export default function AgentWorkspace() {
                             </div>
                         </div>
 
-                        {/* FIX 3: Changed grid-cols-2 to grid-cols-1 sm:grid-cols-2 */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Issue Category</label>

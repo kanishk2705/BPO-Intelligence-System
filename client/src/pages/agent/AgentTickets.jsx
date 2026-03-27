@@ -1,3 +1,4 @@
+// client/src/pages/agent/AgentTickets.jsx
 import { useState, useEffect } from 'react';
 import { Search, Filter, Eye, X, Loader2, MessageSquare, Clock } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
@@ -8,9 +9,11 @@ export default function AgentTickets() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // NEW: State for the Ghost Button Modal
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Fallback to local if env variable isn't set yet
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
     useEffect(() => {
         fetchMyTickets();
@@ -22,14 +25,15 @@ export default function AgentTickets() {
             if (sessionError) throw sessionError;
             if (!session) return;
 
-            const response = await fetch(`https://bpo-backend-vemc.onrender.com/api/tickets?agent_id=${session.user.id}`, {
+            // Uses dynamic environment variable
+            const response = await fetch(`${API_URL}/api/tickets`, {
                 headers: { 'Authorization': `Bearer ${session.access_token}` }
             });
 
             if (!response.ok) throw new Error('Failed to fetch tickets');
 
             const data = await response.json();
-            setTickets(data);
+            setTickets(data.data || data); 
         } catch (error) {
             console.error("Fetch Error:", error);
             toast.error("Could not load your ticket history.");
@@ -43,7 +47,6 @@ export default function AgentTickets() {
         return match ? match[1] : 'General';
     };
 
-    // NEW: Helper to extract the actual notes from the DB string
     const extractNotes = (description) => {
         if (!description) return 'No notes provided.';
         const parts = description.split('\nNotes: ');
@@ -64,7 +67,6 @@ export default function AgentTickets() {
         return customerMatch || categoryMatch || statusMatch;
     });
 
-    // NEW: Function to open the modal
     const openTicketModal = (ticket) => {
         setSelectedTicket(ticket);
         setIsModalOpen(true);
@@ -130,7 +132,6 @@ export default function AgentTickets() {
                                     </td>
                                     <td className="px-6 py-4">{formatDate(tkt.created_at)}</td>
                                     <td className="px-6 py-4 text-right">
-                                        {/* NEW: Click handler added to the Eye button */}
                                         <button
                                             onClick={() => openTicketModal(tkt)}
                                             className="text-emerald-600 hover:text-emerald-800 transition-colors p-2 hover:bg-emerald-50 rounded-lg"
@@ -145,12 +146,10 @@ export default function AgentTickets() {
                 )}
             </div>
 
-            {/* --- NEW: Ticket Detail Modal Overlay --- */}
             {isModalOpen && selectedTicket && (
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-emerald-100">
 
-                        {/* Modal Header */}
                         <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
                             <div>
                                 <h2 className="text-lg font-bold text-slate-800">Ticket Details</h2>
@@ -161,9 +160,7 @@ export default function AgentTickets() {
                             </button>
                         </div>
 
-                        {/* Modal Body */}
                         <div className="p-6 space-y-5">
-
                             <div className="flex justify-between items-start">
                                 <div>
                                     <p className="text-sm font-semibold text-slate-500 mb-1">Customer Name</p>
@@ -204,7 +201,6 @@ export default function AgentTickets() {
 
                         </div>
 
-                        {/* Modal Footer */}
                         <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
                             <button
                                 onClick={() => setIsModalOpen(false)}

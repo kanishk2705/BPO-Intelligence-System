@@ -1,42 +1,48 @@
+// server/middleware/authMiddleware.js
 const supabase = require('../config/db');
 
-// Middleware: "The Bouncer"
+// Middleware: "The Fast Bouncer"
 const authMiddleware = async (req, res, next) => {
     try {
         // 1. Get the token from the header
-        // The frontend sends: "Authorization: Bearer <token>"
-        const token = req.headers.authorization?.split(' ')[1];
-
-        if (!token) {
-            return res.status(401).json({ error: 'Access Denied: No Token Provided' });
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Access Denied: Missing or Invalid Token Format' });
         }
 
-        // 2. Ask Supabase: "Is this token valid?"
-        const { data: { user }, error } = await supabase.auth.getUser(token);
+        const token = authHeader.split(' ')[1];
 
-        if (error || !user) {
-            return res.status(401).json({ error: 'Invalid Token', details: error?.message || 'User not found' });
+        // 2. Ask Supabase: "Is this token valid?" (This is a secure network call to Auth)
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+        if (authError || !user) {
+            return res.status(401).json({ error: 'Invalid or Expired Token', details: authError?.message });
         }
 
-        // 3. Get the user's role from the 'profiles' table
-        // We need to know if they are Admin, Lead, or Agent
-        const { data: profile } = await supabase
+        // 3. PERFORMANCE FIX: Only select exactly what the controllers need
+        const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('*')
+            .select('id, role, email, full_name') 
             .eq('id', user.id)
             .single();
 
-        // 4. Attach user info to the request object so the next function can use it
+        // SILENT BUG FIX: If we can't find their profile, deny access immediately.
+        if (profileError || !profile) {
+            console.error("Profile Fetch Error in Auth:", profileError);
+            return res.status(401).json({ error: 'Access Denied: User profile data is missing or corrupted.' });
+        }
+
+        // 4. Attach user info to the request object
         req.user = user;
-        req.profile = profile || { role: 'unknown' };
+        req.profile = profile;
 
-        console.log(`👤 User Verified: ${req.profile?.email || user.email} (${req.profile?.role})`);
+        // Note: Removed the console.log here to prevent production log spam
 
-        next(); // Pass control to the next function (The Controller)
+        next(); 
 
     } catch (err) {
-        console.error("Auth Middleware Error:", err);
-        res.status(500).json({ error: 'Server Error during Authentication' });
+        console.error("Auth Middleware Critical Error:", err);
+        res.status(500).json({ error: 'Server Error during Authentication process' });
     }
 };
 

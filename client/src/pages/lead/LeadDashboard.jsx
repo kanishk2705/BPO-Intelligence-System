@@ -1,3 +1,4 @@
+// client/src/pages/lead/LeadDashboard.jsx
 import { useState, useEffect } from 'react';
 import { Users, AlertTriangle, CheckCircle, Activity, Loader2 } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
@@ -17,41 +18,26 @@ export default function LeadOverview() {
     }, []);
 
     const fetchDashboardStats = async () => {
+        setIsLoading(true);
         try {
-            // 1. Get the total number of Agents
-            const { count: agentCount, error: agentErr } = await supabase
-                .from('profiles')
-                .select('*', { count: 'exact', head: true })
-                .eq('role', 'agent');
-            if (agentErr) throw agentErr;
+            // PERFORMANCE FIX: Use Promise.all to fetch all 4 metrics at the exact same time
+            const [agentsRes, escalatedRes, resolvedRes, openRes] = await Promise.all([
+                supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'agent'),
+                supabase.from('tickets').select('*', { count: 'exact', head: true }).eq('status', 'escalated'),
+                supabase.from('tickets').select('*', { count: 'exact', head: true }).eq('status', 'resolved'),
+                supabase.from('tickets').select('*', { count: 'exact', head: true }).eq('status', 'open')
+            ]);
 
-            // 2. Get the number of Escalated Tickets
-            const { count: escalatedCount, error: escErr } = await supabase
-                .from('tickets')
-                .select('*', { count: 'exact', head: true })
-                .eq('status', 'escalated');
-            if (escErr) throw escErr;
+            if (agentsRes.error) throw agentsRes.error;
+            if (escalatedRes.error) throw escalatedRes.error;
+            if (resolvedRes.error) throw resolvedRes.error;
+            if (openRes.error) throw openRes.error;
 
-            // 3. Get the number of Resolved Tickets
-            const { count: resolvedCount, error: resErr } = await supabase
-                .from('tickets')
-                .select('*', { count: 'exact', head: true })
-                .eq('status', 'resolved');
-            if (resErr) throw resErr;
-
-            // 4. Get the number of standard Open Tickets
-            const { count: openCount, error: openErr } = await supabase
-                .from('tickets')
-                .select('*', { count: 'exact', head: true })
-                .eq('status', 'open');
-            if (openErr) throw openErr;
-
-            // Update the state with our live database counts!
             setStats({
-                totalAgents: agentCount || 0,
-                escalatedTickets: escalatedCount || 0,
-                resolvedTickets: resolvedCount || 0,
-                openTickets: openCount || 0
+                totalAgents: agentsRes.count || 0,
+                escalatedTickets: escalatedRes.count || 0,
+                resolvedTickets: resolvedRes.count || 0,
+                openTickets: openRes.count || 0
             });
 
         } catch (error) {
@@ -79,7 +65,6 @@ export default function LeadOverview() {
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-                        {/* Metric 1: Agents */}
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-indigo-50 flex items-center space-x-4 hover:shadow-md transition-shadow">
                             <div className="h-12 w-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center">
                                 <Users className="h-6 w-6" />
@@ -90,7 +75,6 @@ export default function LeadOverview() {
                             </div>
                         </div>
 
-                        {/* Metric 2: Open Tickets */}
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-indigo-50 flex items-center space-x-4 hover:shadow-md transition-shadow">
                             <div className="h-12 w-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center">
                                 <Activity className="h-6 w-6" />
@@ -101,7 +85,6 @@ export default function LeadOverview() {
                             </div>
                         </div>
 
-                        {/* Metric 3: Escalated Tickets */}
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-indigo-50 flex items-center space-x-4 hover:shadow-md transition-shadow">
                             <div className="h-12 w-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
                                 <AlertTriangle className="h-6 w-6" />
@@ -112,7 +95,6 @@ export default function LeadOverview() {
                             </div>
                         </div>
 
-                        {/* Metric 4: Resolved Tickets */}
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-indigo-50 flex items-center space-x-4 hover:shadow-md transition-shadow">
                             <div className="h-12 w-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
                                 <CheckCircle className="h-6 w-6" />

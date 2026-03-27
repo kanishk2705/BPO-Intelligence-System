@@ -1,8 +1,10 @@
+// client/src/pages/agent/AgentSchedule.jsx
 import { useState, useEffect } from 'react';
 import { CalendarDays, Clock, Moon, Sun, Sunrise, Loader2 } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 import toast from 'react-hot-toast';
 
+// BUG FIX: Renamed component from AgentPayslips to AgentSchedule
 export default function AgentSchedule() {
     const [shifts, setShifts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -18,8 +20,8 @@ export default function AgentSchedule() {
             if (sessionError) throw sessionError;
             if (!session) return;
 
-            // 2. Fetch only THIS agent's shifts from the backend
-            const response = await fetch(`https://bpo-backend-vemc.onrender.com/api/shifts?user_id=${session.user.id}`, {
+            // 2. Fetch shifts (Backend secure routing handles the specific user filtering)
+            const response = await fetch('https://bpo-backend-vemc.onrender.com/api/shifts', {
                 headers: {
                     'Authorization': `Bearer ${session.access_token}`
                 }
@@ -28,7 +30,8 @@ export default function AgentSchedule() {
             if (!response.ok) throw new Error('Failed to fetch schedule');
 
             const data = await response.json();
-            setShifts(data);
+            // Assuming pagination metadata is returned, extract the data array
+            setShifts(data.data || data); 
         } catch (error) {
             console.error("Fetch Error:", error);
             toast.error("Could not load your schedule.");

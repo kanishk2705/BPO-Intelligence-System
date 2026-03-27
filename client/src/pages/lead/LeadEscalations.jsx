@@ -1,3 +1,4 @@
+// client/src/pages/lead/LeadEscalations.jsx
 import { useState, useEffect } from 'react';
 import { AlertTriangle, MessageSquare, CheckCircle, Clock, Loader2 } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
@@ -18,8 +19,7 @@ export default function LeadEscalations() {
             if (sessionError) throw sessionError;
             if (!session) return;
 
-            // Fetch ONLY tickets where status is 'escalated'
-            const response = await fetch('https://bpo-backend-vemc.onrender.com/api/tickets?status=escalated', {
+            const response = await fetch('https://bpo-backend-vemc.onrender.com/api/tickets', {
                 headers: {
                     'Authorization': `Bearer ${session.access_token}`
                 }
@@ -28,7 +28,12 @@ export default function LeadEscalations() {
             if (!response.ok) throw new Error('Failed to fetch escalations');
 
             const data = await response.json();
-            setEscalations(data);
+            const allTickets = data.data || data; 
+
+            // BUG FIX: The backend controller returns all tickets to the Lead. 
+            // We must filter for 'escalated' tickets on the frontend so they don't see resolved tickets here!
+            setEscalations(allTickets.filter(ticket => ticket.status === 'escalated'));
+            
         } catch (error) {
             console.error("Fetch Error:", error);
             toast.error("Could not load escalated tickets.");
@@ -42,7 +47,6 @@ export default function LeadEscalations() {
         try {
             const { data: { session } } = await supabase.auth.getSession();
 
-            // Send a PUT request to update the status to 'resolved'
             const response = await fetch(`https://bpo-backend-vemc.onrender.com/api/tickets/${id}`, {
                 method: 'PUT',
                 headers: {
@@ -54,7 +58,6 @@ export default function LeadEscalations() {
 
             if (!response.ok) throw new Error('Failed to resolve ticket');
 
-            // Remove the ticket from the UI instantly
             setEscalations(escalations.filter(ticket => ticket.id !== id));
             toast.success(`Ticket resolved successfully!`);
 
@@ -66,16 +69,12 @@ export default function LeadEscalations() {
         }
     };
 
-    // --- HELPER FUNCTIONS ---
-
-    // Extracts just the Notes section from our combined issue_description string
     const extractNotes = (description) => {
         if (!description) return 'No notes provided.';
         const parts = description.split('\nNotes: ');
         return parts.length > 1 ? parts[1] : description;
     };
 
-    // Formats the PostgreSQL timestamp into a readable time
     const formatTime = (dateString) => {
         return new Date(dateString).toLocaleTimeString('en-US', {
             hour: '2-digit', minute: '2-digit'
@@ -121,7 +120,6 @@ export default function LeadEscalations() {
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex items-center space-x-3">
                                         <span className="bg-indigo-100 text-indigo-800 font-bold px-3 py-1 rounded-lg text-sm tracking-wide">
-                                            {/* Show the first 8 characters of the UUID for a clean Ticket ID */}
                                             TKT-{ticket.id.substring(0, 8).toUpperCase()}
                                         </span>
                                         <span className="text-sm font-medium text-slate-500 flex items-center">

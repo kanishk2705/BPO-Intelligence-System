@@ -1,3 +1,4 @@
+// client/src/pages/admin/AdminPayroll.jsx
 import { useState, useEffect } from 'react';
 import { Calculator, DollarSign, FileText, Loader2, CheckCircle, TrendingDown } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
@@ -44,9 +45,9 @@ export default function AdminPayroll() {
         setIsGenerating(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
-
             const formattedDate = `${selectedMonth}-01`;
 
+            // FIXED ROUTE: Matches the backend payrollRoutes.js POST endpoint
             const response = await fetch('https://bpo-backend-vemc.onrender.com/api/payroll/generate', {
                 method: 'POST',
                 headers: {
@@ -71,18 +72,15 @@ export default function AdminPayroll() {
         }
     };
 
-    // --- HELPER: Format currency ---
     const formatMoney = (amount) => {
         return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
     };
 
-    // --- CALCULATE TOTALS ---
     const totalPayout = payrollRecords.reduce((sum, record) => sum + Number(record.final_salary), 0);
     const totalTaxes = payrollRecords.reduce((sum, record) => sum + Number(record.tax_deduction), 0);
 
     return (
         <div className="space-y-6">
-
             {/* Header & Controls */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
@@ -193,7 +191,6 @@ export default function AdminPayroll() {
                     </div>
                 )}
             </div>
-
         </div>
     );
 }

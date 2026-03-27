@@ -1,5 +1,6 @@
+// client/src/layouts/LeadLayout.jsx
 import { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
     LayoutDashboard,
@@ -24,14 +25,22 @@ export default function LeadLayout() {
         { name: 'Team Overview', href: '/lead/team', icon: Users },
     ];
 
+    // Helper to figure out the page title even on nested routes
+    const getCurrentPageName = () => {
+        const sortedNav = [...navigation].sort((a, b) => b.href.length - a.href.length);
+        const currentNav = sortedNav.find(n => location.pathname.startsWith(n.href));
+        return currentNav ? currentNav.name : 'Lead Dashboard';
+    };
+
     return (
         <div className="flex h-screen bg-gray-50 overflow-hidden">
 
             {/* --- 2. MOBILE OVERLAY --- */}
             {isSidebarOpen && (
                 <div
-                    className="fixed inset-0 bg-gray-800 bg-opacity-50 z-40 md:hidden"
+                    className="fixed inset-0 bg-gray-800 bg-opacity-50 z-40 md:hidden transition-opacity"
                     onClick={() => setIsSidebarOpen(false)}
+                    aria-hidden="true"
                 />
             )}
 
@@ -51,34 +60,40 @@ export default function LeadLayout() {
 
                 <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
                     {navigation.map((item) => {
-                        const isActive = location.pathname === item.href;
                         const Icon = item.icon;
-
                         return (
-                            <Link
+                            <NavLink
                                 key={item.name}
                                 to={item.href}
-                                // Auto-close menu when clicked on mobile
+                                end={item.href === '/lead'} // Prevents dashboard from staying active on sub-routes
                                 onClick={() => setIsSidebarOpen(false)}
-                                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${isActive
-                                    ? 'bg-blue-50 text-blue-700'
-                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                    }`}
+                                className={({ isActive }) => `flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                                    isActive
+                                        ? 'bg-blue-50 text-blue-700'
+                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                }`}
                             >
-                                <Icon className={`mr-3 h-5 w-5 ${isActive ? 'text-blue-700' : 'text-gray-400'}`} />
-                                {item.name}
-                            </Link>
+                                {({ isActive }) => (
+                                    <>
+                                        <Icon className={`mr-3 h-5 w-5 ${isActive ? 'text-blue-700' : 'text-gray-400'}`} />
+                                        {item.name}
+                                    </>
+                                )}
+                            </NavLink>
                         );
                     })}
                 </nav>
 
                 <div className="p-4 border-t border-gray-200">
                     <div className="flex items-center mb-4 px-2">
-                        <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
-                            {user?.email?.charAt(0).toUpperCase()}
+                        <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shrink-0">
+                            {/* CRASH FIX: Safe fallback if email is missing */}
+                            {(user?.email || 'U').charAt(0).toUpperCase()}
                         </div>
                         <div className="ml-3 overflow-hidden">
-                            <p className="text-sm font-medium text-gray-900 truncate">{user?.email}</p>
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                                {user?.email || 'Loading user...'}
+                            </p>
                         </div>
                     </div>
                     <button
@@ -93,7 +108,7 @@ export default function LeadLayout() {
 
             {/* --- 4. MAIN CONTENT AREA --- */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                <header className="h-16 bg-white border-b border-gray-200 flex items-center px-4 md:px-8">
+                <header className="h-16 bg-white border-b border-gray-200 flex items-center px-4 md:px-8 shrink-0">
                     {/* Hamburger Button */}
                     <button
                         onClick={() => setIsSidebarOpen(true)}
@@ -103,7 +118,8 @@ export default function LeadLayout() {
                     </button>
 
                     <h2 className="text-lg font-medium text-gray-800 truncate">
-                        {navigation.find(n => n.href === location.pathname)?.name || 'Lead Dashboard'}
+                        {/* Uses our new helper for nested routes */}
+                        {getCurrentPageName()}
                     </h2>
                 </header>
 

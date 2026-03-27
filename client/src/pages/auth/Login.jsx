@@ -1,3 +1,4 @@
+// client/src/pages/auth/Login.jsx
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
@@ -13,50 +14,54 @@ export default function Login() {
         e.preventDefault();
         setIsLoading(true);
 
-        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
+        try {
+            // 1. Authenticate with Supabase
+            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
 
-        if (authError) {
-            toast.error(authError.message);
-            setIsLoading(false);
-            return;
-        }
+            if (authError) throw authError;
 
-        const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', authData.user.id)
-            .single();
+            // 2. Fetch the user's role
+            const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', authData.user.id)
+                .single();
 
-        if (profileError || !profileData) {
-            toast.error('Could not verify user role.');
-            setIsLoading(false);
-            return;
-        }
+            // BUG FIX: Prevent the "Limbo" state. If profile fetch fails, log them out immediately!
+            if (profileError || !profileData) {
+                await supabase.auth.signOut();
+                throw new Error('Could not verify user role. Contact Admin.');
+            }
 
-        toast.success('Login Successful!');
-        const userRole = profileData.role;
+            toast.success('Login Successful!');
+            const userRole = profileData.role;
 
-        setTimeout(() => {
+            // BUG FIX: Removed the 1-second setTimeout. Modern apps should navigate instantly.
+            // Your AuthContext and ProtectedRoutes will handle any micro-loading states.
             if (userRole === 'admin') navigate('/admin');
             else if (userRole === 'lead') navigate('/lead');
             else navigate('/agent');
-        }, 1000);
+
+        } catch (error) {
+            toast.error(error.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
         <div className="flex h-screen items-center justify-center bg-gray-50">
+            {/* Note: If you have a <Toaster /> in App.jsx, you can remove this one to prevent double toasts! */}
             <Toaster position="top-center" reverseOrder={false} />
 
             <div className="w-full max-w-md p-8 bg-white rounded-xl shadow-lg border border-gray-100">
                 <div className="text-center mb-8">
-                    {/* --- LOGO ADDED HERE --- */}
                     <div className="flex justify-center mb-4">
                         <img src="/logo.jpg" alt="BPO Portal Logo" className="h-16 w-auto object-contain" />
                     </div>
-                    {/* <h1 className="text-3xl font-bold text-gray-900">BPO Portal</h1> */}
                     <p className="text-gray-500 mt-2">Sign in to your account</p>
                 </div>
 
@@ -93,7 +98,7 @@ export default function Login() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-all"
+                        className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-all"
                     >
                         {isLoading ? 'Signing in...' : 'Sign In'}
                     </button>

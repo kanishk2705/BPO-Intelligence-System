@@ -1,8 +1,12 @@
+// client/src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import { Toaster } from 'react-hot-toast'; // IMPORT GLOBALLY
+
+// Auth Imports
 import Login from './pages/auth/Login';
 import ForgotPassword from './pages/auth/ForgotPassword';
-import ProtectedRoute from './components/ProtectedRoute';
 
 // Admin Imports
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -22,15 +26,29 @@ import AgentWorkspace from './pages/agent/AgentWorkspace';
 import AgentTickets from './pages/agent/AgentTickets';
 import AgentSchedule from './pages/agent/AgentSchedule';
 import AgentPayslips from './pages/agent/AgentPayslips';
-// Temporary page components so we have something to render inside the layout
+
 function App() {
     return (
         <AuthProvider>
+            {/* Global Toaster ensures notifications persist across page changes */}
+            <Toaster 
+                position="top-right" 
+                toastOptions={{
+                    duration: 3000,
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    },
+                }} 
+            />
+            
             <BrowserRouter>
                 <Routes>
                     {/* Public Routes */}
                     <Route path="/login" element={<Login />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} /> {/* Add this line */}
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    
                     {/* Protected Admin Routes */}
                     <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
                         <Route element={<AdminLayout />}>
@@ -39,6 +57,7 @@ function App() {
                             <Route path="/admin/payroll" element={<AdminPayroll />} />
                         </Route>
                     </Route>
+
                     {/* Protected Team Lead Routes */}
                     <Route element={<ProtectedRoute allowedRoles={['lead']} />}>
                         <Route element={<LeadLayout />}>
@@ -47,6 +66,7 @@ function App() {
                             <Route path="/lead/escalations" element={<LeadEscalations />} />
                         </Route>
                     </Route>
+
                     {/* Protected Agent Routes */}
                     <Route element={<ProtectedRoute allowedRoles={['agent']} />}>
                         <Route element={<AgentLayout />}>
@@ -56,7 +76,9 @@ function App() {
                             <Route path="/agent/payslips" element={<AgentPayslips />} />
                         </Route>
                     </Route>
+
                     {/* Fallback Route */}
+                    {/* If a user goes to a random URL, send them to login. ProtectedRoute will bounce them to their correct dashboard if they are already logged in! */}
                     <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
             </BrowserRouter>

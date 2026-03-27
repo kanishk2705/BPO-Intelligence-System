@@ -1,3 +1,4 @@
+// client/src/pages/admin/AdminDashboard.jsx
 import { useState, useEffect } from 'react';
 import { Users, DollarSign, Activity, Database, Loader2 } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
@@ -16,34 +17,28 @@ export default function AdminDashboard() {
     }, []);
 
     const fetchAdminStats = async () => {
+        setIsLoading(true);
         try {
-            // 1. Fetch Total Registered Users
-            const { count: userCount, error: userErr } = await supabase
-                .from('profiles')
-                .select('*', { count: 'exact', head: true });
-            if (userErr) throw userErr;
-
-            // 2. Fetch Total Lifetime Tickets
-            const { count: ticketCount, error: ticketErr } = await supabase
-                .from('tickets')
-                .select('*', { count: 'exact', head: true });
-            if (ticketErr) throw ticketErr;
-
-            // 3. Fetch Total Net Payroll for the Current Month
             const currentMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-01`;
-            const { data: payrollData, error: payrollErr } = await supabase
-                .from('payroll')
-                .select('final_salary')
-                .eq('month_year', currentMonth);
-            if (payrollErr) throw payrollErr;
+
+            // PERFORMANCE FIX: Run all queries in parallel instead of waiting for each one
+            const [usersResult, ticketsResult, payrollResult] = await Promise.all([
+                supabase.from('profiles').select('*', { count: 'exact', head: true }),
+                supabase.from('tickets').select('*', { count: 'exact', head: true }),
+                supabase.from('payroll').select('final_salary').eq('month_year', currentMonth)
+            ]);
+
+            if (usersResult.error) throw usersResult.error;
+            if (ticketsResult.error) throw ticketsResult.error;
+            if (payrollResult.error) throw payrollResult.error;
 
             // Sum up the total money paid out this month
-            const totalMoney = payrollData?.reduce((sum, record) => sum + Number(record.final_salary), 0) || 0;
+            const totalMoney = payrollResult.data?.reduce((sum, record) => sum + Number(record.final_salary), 0) || 0;
 
             // Update state
             setStats({
-                totalUsers: userCount || 0,
-                totalTickets: ticketCount || 0,
+                totalUsers: usersResult.count || 0,
+                totalTickets: ticketsResult.count || 0,
                 totalPayroll: totalMoney,
             });
 
@@ -61,7 +56,6 @@ export default function AdminDashboard() {
 
     return (
         <div className="space-y-6">
-
             {/* Header */}
             <div>
                 <h1 className="text-2xl font-bold text-slate-800">Admin Control Center</h1>
@@ -76,7 +70,6 @@ export default function AdminDashboard() {
                 <>
                     {/* Executive Metrics Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
-
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
                             <div className="h-12 w-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
                                 <Users className="h-6 w-6" />
@@ -106,7 +99,6 @@ export default function AdminDashboard() {
                                 <p className="text-2xl font-bold text-slate-800">{stats.totalTickets}</p>
                             </div>
                         </div>
-
                     </div>
 
                     {/* System Health Banner */}
@@ -129,7 +121,6 @@ export default function AdminDashboard() {
                     </div>
                 </>
             )}
-
         </div>
     );
 }

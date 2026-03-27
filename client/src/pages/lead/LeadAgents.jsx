@@ -1,13 +1,13 @@
+// client/src/pages/lead/LeadAgents.jsx
 import { useState, useEffect } from 'react';
 import { CalendarPlus, X, UserCircle, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { supabase } from '../../supabaseClient'; // Import Supabase
+import { supabase } from '../../supabaseClient'; 
 
 export default function LeadAgents() {
     const [agents, setAgents] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedAgent, setSelectedAgent] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,18 +16,20 @@ export default function LeadAgents() {
         shiftType: 'Morning (9AM - 5PM)'
     });
 
-    // Fetch the roster when the page loads
     useEffect(() => {
         fetchAgents();
     }, []);
 
     const fetchAgents = async () => {
         try {
-            // Fetch all users with the 'agent' role directly from your public profiles table
+            const { data: { session } } = await supabase.auth.getSession(); // Get Lead's session
+            
             const { data, error } = await supabase
                 .from('profiles')
                 .select('id, full_name, email')
-                .eq('role', 'agent');
+                .eq('role', 'agent')
+                // 🛡️ THE FIX: Only fetch agents assigned to THIS specific lead
+                .eq('lead_id', session.user.id);
 
             if (error) throw error;
             setAgents(data || []);
@@ -49,22 +51,32 @@ export default function LeadAgents() {
         setIsSubmitting(true);
 
         try {
-            // 1. Get the Lead's secure token
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("Authentication error. Please log in again.");
 
-            // 2. Send the exact payload our new Express route expects
-            const response = await fetch('https://bpo-backend-vemc.onrender.com/api/shifts', {
+            // BUG FIX: Map the UI dropdown string to the exact PostgreSQL columns expected by our new shiftController.js
+            let payload = {
+                user_id: selectedAgent.id,
+                shift_date: shiftData.date,
+            };
+
+            if (shiftData.shiftType.includes('Morning')) {
+                payload = { ...payload, shift_type: 'morning', start_time: '09:00:00', end_time: '17:00:00', is_night_shift: false };
+            } else if (shiftData.shiftType.includes('Evening')) {
+                payload = { ...payload, shift_type: 'evening', start_time: '13:00:00', end_time: '21:00:00', is_night_shift: false };
+            } else if (shiftData.shiftType.includes('Night')) {
+                payload = { ...payload, shift_type: 'night', start_time: '21:00:00', end_time: '05:00:00', is_night_shift: true };
+            } else {
+                throw new Error("Shift clearing (Off Duty) must be handled in the Admin portal.");
+            }
+
+            const response = await fetch('http://localhost:5000/api/shifts', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${session.access_token}`
                 },
-                body: JSON.stringify({
-                    user_id: selectedAgent.id,
-                    date: shiftData.date,
-                    shift_string: shiftData.shiftType
-                })
+                body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
@@ -74,7 +86,6 @@ export default function LeadAgents() {
 
             toast.success(`Shift assigned to ${selectedAgent.full_name || 'Agent'} for ${shiftData.date}!`);
 
-            // Close and reset the modal
             setIsModalOpen(false);
             setShiftData({ date: '', shiftType: 'Morning (9AM - 5PM)' });
 
@@ -83,8 +94,6 @@ export default function LeadAgents() {
             toast.error(error.message || 'An unexpected error occurred assigning shift');
         } finally {
             setIsSubmitting(false);
-            // Optional: You could fetch the roster again here if you want to verify state instantly
-            // fetchAgents();
         }
     };
 
@@ -181,7 +190,6 @@ export default function LeadAgents() {
                                     <option value="Morning (9AM - 5PM)">Morning (9AM - 5PM)</option>
                                     <option value="Evening (1PM - 9PM)">Evening (1PM - 9PM)</option>
                                     <option value="Night (9PM - 5AM)">Night Shift (9PM - 5AM)</option>
-                                    <option value="Off Duty">Rest Day / Off Duty</option>
                                 </select>
                             </div>
 
@@ -189,8 +197,8 @@ export default function LeadAgents() {
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
                                     Cancel
                                 </button>
-                                <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 rounded-xl shadow-sm transition-colors">
-                                    {isSubmitting ? 'Saving...' : 'Confirm Shift'}
+                                <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 rounded-xl shadow-sm transition-colors flex items-center">
+                                    {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : 'Confirm Shift'}
                                 </button>
                             </div>
                         </form>

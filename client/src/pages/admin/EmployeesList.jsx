@@ -1,3 +1,4 @@
+// client/src/pages/admin/EmployeesList.jsx
 import { useState, useEffect } from 'react';
 import { Users, Search, UserPlus, Shield, Briefcase, Mail, Loader2, X } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
@@ -8,11 +9,11 @@ export default function AdminEmployees() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // NEW: Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
     const [formData, setFormData] = useState({
-        email: '', password: '', full_name: '', role: 'agent', hourly_rate: 15.00
+        email: '', password: '', full_name: '', role: 'agent', hourly_rate: 15.00, lead_id: ''
     });
 
     useEffect(() => {
@@ -36,7 +37,6 @@ export default function AdminEmployees() {
         }
     };
 
-    // NEW: Handle creating the new user
     const handleAddUser = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -44,13 +44,24 @@ export default function AdminEmployees() {
         try {
             const { data: { session } } = await supabase.auth.getSession();
 
-            const response = await fetch('https://bpo-backend-vemc.onrender.com/api/users', {
+            // STRICT PAYLOAD CHECK: Ensure empty strings are converted to actual nulls
+            const payload = {
+                email: formData.email,
+                password: formData.password,
+                fullName: formData.full_name,
+                role: formData.role,
+                hourlyRate: formData.hourly_rate,
+                leadId: formData.role === 'agent' && formData.lead_id !== '' ? formData.lead_id : null
+            };
+
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const response = await fetch(`${API_URL}/api/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${session.access_token}`
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
@@ -60,8 +71,8 @@ export default function AdminEmployees() {
 
             toast.success(`${formData.full_name} added successfully!`);
             setIsModalOpen(false);
-            setFormData({ email: '', password: '', full_name: '', role: 'agent', hourly_rate: 15.00 });
-            fetchEmployees(); // Refresh the table
+            setFormData({ email: '', password: '', full_name: '', role: 'agent', hourly_rate: 15.00, lead_id: '' });
+            fetchEmployees();
 
         } catch (error) {
             console.error('Creation Error:', error);
@@ -80,6 +91,9 @@ export default function AdminEmployees() {
         );
     });
 
+    // Extract only the leads for our dropdown menu
+    const availableLeads = employees.filter(emp => emp.role === 'lead');
+
     const getRoleBadge = (role) => {
         switch (role) {
             case 'admin': return <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold uppercase tracking-wider flex items-center w-fit"><Shield className="h-3 w-3 mr-1.5" /> Admin</span>;
@@ -90,8 +104,6 @@ export default function AdminEmployees() {
 
     return (
         <div className="space-y-6 relative">
-
-            {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-800">Company Directory</h1>
@@ -109,7 +121,6 @@ export default function AdminEmployees() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    {/* OPEN MODAL BUTTON */}
                     <button
                         onClick={() => setIsModalOpen(true)}
                         className="flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-sm transition-all whitespace-nowrap"
@@ -120,7 +131,6 @@ export default function AdminEmployees() {
                 </div>
             </div>
 
-            {/* Table */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 {isLoading ? (
                     <div className="flex justify-center items-center p-16">
@@ -176,11 +186,9 @@ export default function AdminEmployees() {
                 )}
             </div>
 
-            {/* --- ADD EMPLOYEE MODAL --- */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-200">
-
                         <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
                             <h2 className="text-lg font-bold text-slate-800">Register New Employee</h2>
                             <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 bg-white rounded-full p-1 shadow-sm border border-slate-200">
@@ -224,6 +232,23 @@ export default function AdminEmployees() {
                                 </div>
                             </div>
 
+                            {formData.role === 'agent' && (
+                                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <label className="block text-sm font-semibold text-slate-700 mb-1">Assign to Team Lead</label>
+                                    <select
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-slate-700"
+                                        value={formData.lead_id}
+                                        onChange={(e) => setFormData({ ...formData, lead_id: e.target.value })}
+                                        required
+                                    >
+                                        <option value="" disabled>Select a Lead...</option>
+                                        {availableLeads.map(lead => (
+                                            <option key={lead.id} value={lead.id}>{lead.full_name} ({lead.email})</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
                             <div className="pt-4 flex justify-end space-x-3">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
                                     Cancel
@@ -234,7 +259,6 @@ export default function AdminEmployees() {
                                 </button>
                             </div>
                         </form>
-
                     </div>
                 </div>
             )}

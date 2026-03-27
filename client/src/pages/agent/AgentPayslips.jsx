@@ -1,3 +1,4 @@
+// client/src/pages/agent/AgentPayslips.jsx
 import { useState, useEffect } from 'react';
 import { DollarSign, FileText, Download, Calendar, Loader2 } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
@@ -18,8 +19,8 @@ export default function AgentPayslips() {
             if (sessionError) throw sessionError;
             if (!session) return;
 
-            // 2. Fetch only THIS agent's payroll records
-            const response = await fetch(`https://bpo-backend-vemc.onrender.com/api/payroll?user_id=${session.user.id}`, {
+            // 2. Fetch the records (Our secure backend automatically filters for THIS agent only)
+            const response = await fetch('https://bpo-backend-vemc.onrender.com/api/payroll', {
                 headers: {
                     'Authorization': `Bearer ${session.access_token}`
                 }
@@ -28,7 +29,8 @@ export default function AgentPayslips() {
             if (!response.ok) throw new Error('Failed to fetch payslips');
 
             const data = await response.json();
-            setPayslips(data);
+            // Assuming pagination metadata is returned, extract the data array
+            setPayslips(data.data || data); 
         } catch (error) {
             console.error("Fetch Error:", error);
             toast.error("Could not load your payslips.");

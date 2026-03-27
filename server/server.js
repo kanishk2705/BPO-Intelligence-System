@@ -2,31 +2,33 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+
+// IMPORT ONLY THE CLEAN ROUTE FILES
 const authRoutes = require('./routes/authRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
-const usersRoute = require('./routes/users');
 const ticketRoutes = require('./routes/ticketRoutes');
 const shiftRoutes = require('./routes/shiftRoutes');
 const payrollRoutes = require('./routes/payrollRoutes');
-const ticketsRoute = require('./routes/tickets');
-const shiftsRoute = require('./routes/shifts');
-const payrollRoute = require('./routes/payroll');
-// Import Database Connection
-const supabase = require('./config/db');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware (Security & Parsing)
-app.use(cors()); // Allow frontend to talk to us
-app.use(express.json()); // Parse JSON bodies (e.g. POST requests)
+app.use(cors({
+    // TODO: Replace with your actual deployed Vercel frontend URL before production
+    origin: ['http://localhost:5173', 'https://bpo-portal.vercel.app/login'], 
+    credentials: true,
+})); 
+
+// Parse JSON bodies with a strict size limit to prevent payload bloat
+app.use(express.json({ limit: '10mb' })); 
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ----------------------------------
 // Basic Health Check Route
 // ----------------------------------
-// This is what you visit to see if the server is alive.
 app.get('/', (req, res) => {
-    res.json({
+    res.status(200).json({
         status: 'Active',
         system: 'BPO Management System API',
         timestamp: new Date().toISOString()
@@ -36,17 +38,15 @@ app.get('/', (req, res) => {
 // ----------------------------------
 // API Routes
 // ----------------------------------
-// Apply routes securely
 app.use('/api/auth', authRoutes);
-app.use('/api/employees', employeeRoutes);
-app.use('/api/tickets', ticketsRoute);
-app.use('/api/shifts', shiftsRoute);
-app.use('/api/payroll', payrollRoute);
-app.use('/api/users', usersRoute);
+app.use('/api/employees', employeeRoutes); // This now completely handles what users.js used to do
+app.use('/api/tickets', ticketRoutes);
+app.use('/api/shifts', shiftRoutes);
+app.use('/api/payroll', payrollRoutes);
 
 // Start the Server
 app.listen(PORT, () => {
     console.log(`\n🚀 SERVER RUNNING ON: http://localhost:${PORT}`);
     console.log(`   - Environment: ${process.env.NODE_ENV || 'Development'}`);
-    console.log(`   - DB Connection: Initialized\n`);
+    console.log(`   - DB Connection: Initialized via db.js\n`);
 });
